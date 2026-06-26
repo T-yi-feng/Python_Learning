@@ -1,0 +1,28 @@
+# 克隆的仓库（太大，不要上传）
+learnopencv/
+Python-100-Days/
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+
+# 数据文件（太大）
+*.mp4
+*.avi
+*.mov
+data/
+
+# PyTorch 模型权重
+*.pt
+*.pth
+*.ckpt
