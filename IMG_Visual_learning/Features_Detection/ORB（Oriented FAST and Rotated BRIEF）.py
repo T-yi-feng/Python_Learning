@@ -25,12 +25,14 @@ import cv2 as cv
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv.imread('Features_Detection\\BB1.jpg')
-gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+img = cv.imread('IMG_Visual_learning\\Features_Detection\\BB1.jpg')
 assert img is not None, f"图像加载失败，请检查路径{img}是否正确。"
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+
+orb_create = getattr(cv, 'ORB_create')
 
 #初始化ORB检测器对象：
-orb = cv.ORB_create(
+orb = orb_create(
     nfeatures=1000,
     scoreType=cv.ORB_HARRIS_SCORE
     )  # 设置最大特征数量和评分类型
@@ -41,7 +43,7 @@ kp = orb.detect(gray,None)
 kp, des = orb.compute(gray, kp)
 
 ## draw only keypoints location,not size and orientation:
-img2 = cv.drawKeypoints(img, kp, None, color=(0,255,0), flags=cv.DrawMatchesFlags_DEFAULT)
+img2 = cv.drawKeypoints(img, kp, img.copy(), color=(0,255,0), flags=cv.DrawMatchesFlags_DEFAULT)
 # 显示结果  
 plt.imshow(img2)
 plt.title('ORB Keypoints')
@@ -49,8 +51,8 @@ plt.axis('off')
 plt.show()
 
 # 对BB1和BB2进行ORB特征匹配，使用FLANN匹配器
-img1 = cv.imread('Features_Detection\\BB1.jpg')
-img2 = cv.imread('Features_Detection\\BB2.jpg')
+img1 = cv.imread('IMG_Visual_learning\\Features_Detection\\BB1.jpg')
+img2 = cv.imread('IMG_Visual_learning\\Features_Detection\\BB2.jpg')
 assert img1 is not None, "图像加载失败，请检查BB1路径是否正确。"
 assert img2 is not None, "图像加载失败，请检查BB2路径是否正确。"
 
@@ -58,32 +60,36 @@ gray1 = cv.cvtColor(img1, cv.COLOR_BGR2GRAY)
 gray2 = cv.cvtColor(img2, cv.COLOR_BGR2GRAY)
 
 orb = cv.ORB_create(nfeatures=1000, scoreType=cv.ORB_HARRIS_SCORE)
+orb = orb_create(nfeatures=1000, scoreType=cv.ORB_HARRIS_SCORE)
 kp1, des1 = orb.detectAndCompute(gray1, None)
 kp2, des2 = orb.detectAndCompute(gray2, None)
 
-img1_draw = cv.drawKeypoints(img1, kp1, None, color=(0, 255, 0), flags=cv.DrawMatchesFlags_DEFAULT)
-img2_draw = cv.drawKeypoints(img2, kp2, None, color=(0, 255, 0), flags=cv.DrawMatchesFlags_DEFAULT)
+img1_draw = cv.drawKeypoints(img1, kp1, img1.copy(), color=(0, 255, 0), flags=cv.DrawMatchesFlags_DEFAULT)
+img2_draw = cv.drawKeypoints(img2, kp2, img2.copy(), color=(0, 255, 0), flags=cv.DrawMatchesFlags_DEFAULT)
 # FLANN参数：ORB为二进制描述子，使用LSH索引
 FLANN_INDEX_LSH = 6
-index_params = dict(
+index_params: dict[str, int] = dict(
     algorithm=FLANN_INDEX_LSH,
     table_number=6,
     key_size=12,
     multi_probe_level=1,
 )
-search_params = dict(checks=50)
+search_params: dict[str, int] = dict(checks=50)
 flann = cv.FlannBasedMatcher(index_params, search_params)
 
-matches = flann.knnMatch(des1, des2, k=2)
+matches = flann.knnMatch(des1, des2, k=2) if des1 is not None and des2 is not None else []
 
 # Lowe比率测试筛选匹配点
 good_matches = []
-for m, n in matches:
+for pair in matches:
+    if len(pair) < 2:
+        continue
+    m, n = pair
     if m.distance < 0.75 * n.distance:
         good_matches.append(m)
 
 match_img = cv.drawMatches(
-    img1, kp1, img2, kp2, good_matches, None,
+    img1, kp1, img2, kp2, good_matches, img1.copy(),
     flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS
 )
 

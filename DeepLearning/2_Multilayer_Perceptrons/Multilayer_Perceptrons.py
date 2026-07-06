@@ -3,7 +3,7 @@ from torch import nn
 import torchvision 
 from matplotlib import pyplot as plt
 
-def load_data_fashion_mnist(batch_size, resize=None, root='C:\\Users\\21495\\Desktop\\python\\DeepLearning\\Multilayer_Perceptrons\\data'):
+def load_data_fashion_mnist(batch_size, resize=None, root='C:\\Users\\21495\\Desktop\\python\\DeepLearning\\2_Multilayer_Perceptrons\\data'):
     """
     下载Fashion-MNIST数据集，然后将其加载到内存中
     """
